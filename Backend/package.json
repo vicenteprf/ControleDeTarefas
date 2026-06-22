@@ -1,4 +1,6 @@
 {
+  "name": "controle de tarefas",
+  "type": "module",
   "dependencies": {
     "express": "^5.2.1"
   },
