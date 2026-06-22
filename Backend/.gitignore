@@ -1,0 +1,12 @@
+# Arquivos de sistema e logs
+thumbs.db
+.DS_Store
+*.log
+
+# Variáveis de ambiente (Segurança - NUNCA REMOVA)
+.env
+.env.local
+
+
+# Dependências
+node_modules
