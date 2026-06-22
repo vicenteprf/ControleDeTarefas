@@ -1,5 +1,5 @@
 import express, { type Express } from "express";
-import routes from "./routes.ts";
+import routes from "./routes/routes.ts";
 
 class App {
   public server: Express;
