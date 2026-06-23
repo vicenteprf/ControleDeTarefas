@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "nodenext",
+    "module": "NodeNext",
     "jsx": "react",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "NodeNext",
     "noEmit": true,
     "strict": true,
     "erasableSyntaxOnly": true,
