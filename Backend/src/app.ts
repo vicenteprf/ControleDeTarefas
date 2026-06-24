@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, { type Express } from "express";
 import routes from "./routes/routes.ts";
 
