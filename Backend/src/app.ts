@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { type Express } from "express";
+import cors from "cors";
 import routes from "./routes/routes.ts";
 
 class App {
@@ -12,6 +13,12 @@ class App {
   }
 
   private middlewares() {
+    this.server.use(
+      cors({
+        origin: "http://localhost:5173",
+      }),
+    );
+
     this.server.use(express.json());
   }
 
