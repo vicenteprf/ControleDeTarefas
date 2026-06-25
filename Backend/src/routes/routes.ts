@@ -12,11 +12,15 @@ routes.post("/users", UserController.create);
 
 routes.post("/sessions", SessionController.store);
 
-// Todas rotas abaixo desse middleware precisa estar autenticado
+// As rotas abaixo exigem autenticação
 routes.use(authMiddleware);
 
-routes.get("/task", TaskControllers.index);
+routes.get("/tasks", TaskControllers.index);
 
 routes.post("/task", TaskControllers.store);
+
+routes.put("/task/:id", TaskControllers.update);
+
+routes.delete("/task/:id", TaskControllers.delete);
 
 export default routes;
