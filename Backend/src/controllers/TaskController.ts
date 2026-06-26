@@ -85,6 +85,7 @@ class TaskControllers {
         description: Yup.string(),
         priority: Yup.string(),
         dueDate: Yup.date(),
+        status: Yup.boolean(),
       });
 
       // Valida e filtra os dados enviados na requisição

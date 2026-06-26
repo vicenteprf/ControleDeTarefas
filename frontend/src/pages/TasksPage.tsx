@@ -3,19 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import { api } from "../services/api.ts";
 
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  status: "pendente" | "concluida";
-  priority: "baixa" | "media" | "alta";
-  dueDate: string;
-};
+import type { Task } from "../types/index.ts";
+
+import { FaTrashAlt, FaPencilAlt, FaSignOutAlt } from "react-icons/fa";
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  // Estado do formulário
+  // Estado dos campos do formulário
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -23,7 +18,7 @@ export default function TasksPage() {
     dueDate: "",
   });
 
-  // Estado para controlar se estamos editando e qual tarefa está sendo editada
+  // Controla qual tarefa está sendo editada
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
 
   const [erro, setErro] = useState("");
@@ -42,10 +37,11 @@ export default function TasksPage() {
     navigate("/");
   }, [navigate]);
 
-  // 1. Busca as tarefas ao carregar a página
+  // Carrega as tarefas ao abrir a página
   useEffect(() => {
     async function loadTasks() {
       try {
+        // Busca as tarefas do usuário autenticado
         const response = await api.get("/tasks", getAuthHeader());
 
         if (response.data && Array.isArray(response.data.tasks)) {
@@ -75,7 +71,7 @@ export default function TasksPage() {
     });
   }
 
-  // 2. Cria ou Atualiza uma tarefa (Lida com o Submit do formulário)
+  // Cria ou atualiza uma tarefa
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -86,10 +82,15 @@ export default function TasksPage() {
 
     try {
       if (editingTaskId) {
-        // MODO EDIÇÃO: Rota PUT /task/:id do seu backend
+        // Atualiza a tarefa selecionada
+        const task = tasks.find((t) => t.id === editingTaskId);
+
         const response = await api.put(
           `/task/${editingTaskId}`,
-          form,
+          {
+            ...form,
+            status: task?.status,
+          },
           getAuthHeader(),
         );
 
@@ -100,9 +101,10 @@ export default function TasksPage() {
           ),
         );
 
-        setEditingTaskId(null); // Sai do modo de edição
+        // Finaliza o modo de edição
+        setEditingTaskId(null);
       } else {
-        // MODO CRIAÇÃO: Rota POST /task
+        // Cria uma nova tarefa
         const response = await api.post("/task", form, getAuthHeader());
         setTasks((prev) => [...prev, response.data]);
       }
@@ -125,11 +127,11 @@ export default function TasksPage() {
     }
   }
 
-  // 3. Ativa o Modo de Edição e preenche os inputs com os dados da tarefa selecionada
+  // Preenche o formulário com os dados da tarefa selecionada
   function handleStartEdit(task: Task) {
     setEditingTaskId(task.id);
 
-    // Formata a data para o padrão do input tipo date (YYYY-MM-DD)
+    // Cancela a edição atual e limpa o formulário
     const formattedDate = task.dueDate ? task.dueDate.split("T")[0] : "";
 
     setForm({
@@ -152,14 +154,14 @@ export default function TasksPage() {
     setErro("");
   }
 
-  // 4. Rota DELETE /task/:id do seu backend
+  // Exclui uma tarefa
   async function handleDeleteTask(id: number) {
     if (!window.confirm("Tem certeza que deseja excluir esta tarefa?")) return;
 
     try {
       await api.delete(`/task/${id}`, getAuthHeader());
 
-      // Remove a tarefa do estado visual local instantaneamente
+      // Remove a tarefa da lista sem recarregar a página
       setTasks((prev) => prev.filter((task) => task.id !== id));
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -171,9 +173,38 @@ export default function TasksPage() {
     }
   }
 
+  // Alterna o status da tarefa entre pendente e concluída
+  async function handleToggleStatus(task: Task) {
+    try {
+      const response = await api.put(
+        `/task/${task.id}`,
+        {
+          title: task.title,
+          description: task.description,
+          priority: task.priority,
+          dueDate: task.dueDate,
+          status: !task.status,
+        },
+        getAuthHeader(),
+      );
+
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? response.data : t)),
+      );
+    } catch (error) {
+      const axiosError = error as AxiosError;
+
+      if (axiosError.response?.status === 401) {
+        handleLogout();
+      } else {
+        setErro("Erro ao atualizar o status da tarefa.");
+      }
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col items-center p-6">
-      {/* Cabeçalho */}
+      {/* Cabeçalho da página */}
       <div className="w-full max-w-4xl flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
@@ -188,11 +219,11 @@ export default function TasksPage() {
           onClick={handleLogout}
           className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition border border-red-200 dark:border-red-900 cursor-pointer"
         >
-          Sair da Conta
+          <FaSignOutAlt size={18} />
         </button>
       </div>
 
-      {/* Formulário Dinâmico (Criação ou Edição) */}
+      {/* Formulário de criação e edição */}
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-4xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm"
@@ -246,7 +277,7 @@ export default function TasksPage() {
             {editingTaskId ? "Salvar Alterações" : "Criar tarefa"}
           </button>
 
-          {/* Botão extra exibido apenas no Modo de Edição */}
+          {/* Exibido apenas durante a edição */}
           {editingTaskId && (
             <button
               type="button"
@@ -295,24 +326,36 @@ export default function TasksPage() {
                 </div>
               </div>
 
-              {/* Ações da Tarefa */}
+              {/* Ações da tarefa */}
               <div className="flex flex-row justify-center items-center gap-2">
                 <span
                   className={`text-xs px-3 py-1 rounded-full font-medium mr-2 ${
-                    task.status === "concluida"
+                    task.status
                       ? "bg-green-100 text-green-600"
                       : "bg-yellow-100 text-yellow-600"
                   }`}
                 >
-                  {task.status === "concluida" ? "Concluída" : "Pendente"}
+                  {task.status ? "Concluída" : "Pendente"}
                 </span>
+
+                {/* Botão para alterar o status da tarefa */}
+                <button
+                  onClick={() => handleToggleStatus(task)}
+                  className={`text-xs px-3 py-1.5 font-medium rounded-lg transition cursor-pointer ${
+                    !task.status
+                      ? "text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 border border-green-200 dark:border-green-900"
+                      : "text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900"
+                  }`}
+                >
+                  {task.status ? "Concluir" : "Reabrir"}
+                </button>
 
                 {/* Botão Editar */}
                 <button
                   onClick={() => handleStartEdit(task)}
                   className="text-xs px-3 py-1.5 font-medium rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 border border-blue-200 dark:border-blue-900 transition cursor-pointer"
                 >
-                  Editar
+                  <FaPencilAlt size={18} />
                 </button>
 
                 {/* Botão Excluir */}
@@ -320,7 +363,7 @@ export default function TasksPage() {
                   onClick={() => handleDeleteTask(task.id)}
                   className="text-xs px-3 py-1.5 font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-200 dark:border-red-900 transition cursor-pointer"
                 >
-                  Excluir
+                  <FaTrashAlt size={18} />
                 </button>
               </div>
             </div>

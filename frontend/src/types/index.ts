@@ -1,8 +1,8 @@
 export type Task = {
-  id: string; // ou number, dependendo do seu banco
+  id: number;
   title: string;
   description: string;
-  status: "pendente" | "concluida";
-  priority: "baixa" | "media" | "alta"; // Adicione essa linha
-  dueDate: string; // Adicione essa linha também
+  status: boolean;
+  priority: "baixa" | "media" | "alta";
+  dueDate: string;
 };
