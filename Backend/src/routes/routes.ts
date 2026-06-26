@@ -10,6 +10,8 @@ const routes = Router();
 
 routes.post("/users", UserController.create);
 
+routes.post("/password/forgot", UserController.forgotPassword);
+
 routes.post("/sessions", SessionController.store);
 
 // As rotas abaixo exigem autenticação
