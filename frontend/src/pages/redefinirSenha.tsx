@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { AxiosError } from "axios";
 import { api } from "../services/api.ts";
 
 export default function RedefinicaoSenhaPage() {
-  // Estado do formulário de login
+  // Estado do formulário de redefinição
   const [dados, setDados] = useState({
     password: "",
     newPassword: "",
@@ -12,73 +13,105 @@ export default function RedefinicaoSenhaPage() {
 
   // Estado para mensagens de erro
   const [erro, setErro] = useState("");
+  // Estado para mensagens de sucesso
+  const [sucesso, setSucesso] = useState("");
+  // Controla o estado de carregamento da requisição
+  const [carregando, setCarregando] = useState(false);
+  // Controla a exibição da senha nos campos
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const navigate = useNavigate();
 
-  // Atualiza os campos do formulário conforme o usuário digita
+  // Obtém o token enviado na URL
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+
+  // Atualiza os campos do formulário
   function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
-
     setDados({
       ...dados,
       [name]: value,
     });
   }
 
-  // Envia os dados para autenticação do usuário
-  async function handleAcessar(e: React.FormEvent) {
+  // Envia os dados para salvar a nova senha no backend
+  async function handleRedefinirSenha(e: React.FormEvent) {
     e.preventDefault();
+    setErro("");
+    setSucesso("");
 
-    // Validação simples de campos obrigatórios
-    if (!dados.password.trim() || !dados.password.trim()) {
+    // Valida os dados antes de enviar a requisição
+    if (!token) {
+      setErro(
+        "O token de recuperação está ausente ou é inválido. Solicite um novo link.",
+      );
+      return;
+    }
+
+    if (!dados.password.trim() || !dados.newPassword.trim()) {
       setErro("Preencha todos os campos.");
       return;
     }
 
+    if (dados.password.length < 6) {
+      setErro("A nova senha deve conter no mínimo 6 caracteres.");
+      return;
+    }
+
+    if (dados.password !== dados.newPassword) {
+      setErro("A nova senha e a confirmação não coincidem.");
+      return;
+    }
+
     try {
-      // Requisição de login para o backend
-      const response = await api.post("/sessions", dados);
+      setCarregando(true);
 
-      // Extrai o token retornado pela API
-      const token = response.data.token;
-
-      // Se existir token, salva no localStorage
-      if (token) {
-        localStorage.setItem("token", token);
-      }
-
-      // Limpa o formulário após login
-      setDados({
-        password: "",
-        newPassword: "",
+      // Envia a nova senha e o token para o backend
+      await api.post("/password/reset", {
+        token,
+        password: dados.password,
       });
 
-      // Limpa mensagens de erro
-      setErro("");
+      setSucesso("Sua senha foi redefinida com sucesso!");
 
-      // Redireciona para a página de tarefas
-      navigate("/tasks");
-    } catch {
-      // Exibe erro caso o login falhe
-      setErro("Erro ao realizar login.");
+      // Limpa os campos do formulário
+      setDados({ password: "", newPassword: "" });
+
+      // Aguarda alguns segundos e redireciona para o login
+      setTimeout(() => {
+        navigate("/");
+      }, 3000);
+    } catch (error) {
+      const err = error as AxiosError<{ error: string }>;
+
+      // Exibe a mensagem de erro retornada pelo backend
+      if (err.response && err.response.data && err.response.data.error) {
+        setErro(err.response.data.error);
+      } else {
+        setErro("Erro ao redefinir a senha. Tente novamente mais tarde.");
+      }
+    } finally {
+      setCarregando(false);
     }
   }
 
   return (
     <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col justify-center items-center gap-4 p-4">
       <form
-        onSubmit={handleAcessar}
+        onSubmit={handleRedefinirSenha}
+        noValidate // Desativa as validações nativas do navegador
         className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 sm:p-10"
       >
-        <div className="flex flex-col justfy-center items-center gap-2 mb-10">
-          <h1 className="text-2xl font-bold text-slate-100 text'center">
+        <div className="flex flex-col justify-center items-center gap-2 mb-10">
+          {/* Título da página */}
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 text-center">
             Redefinir senha
           </h1>
         </div>
 
         <div className="flex flex-col gap-4">
-          {/* Campo: Email */}
+          {/* Campo: Confirmação da senha */}
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="password"
@@ -98,28 +131,26 @@ export default function RedefinicaoSenhaPage() {
               />
               <button
                 type="button"
+                // Alterna entre exibir e ocultar a senha
                 onClick={() => setMostrarSenha(!mostrarSenha)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-slate-300 cursor-pointer flex items-center justify-center"
               >
                 {mostrarSenha ? (
                   <FaEyeSlash
                     size={18}
-                    className="hover:text-blue-400
-                                transition-colors
-                                duration-200"
+                    className="hover:text-blue-400 transition-colors duration-200"
                   />
                 ) : (
                   <FaEye
                     size={18}
-                    className="hover:text-blue-400
-                                transition-colors
-                                duration-200"
+                    className="hover:text-blue-400 transition-colors duration-200"
                   />
                 )}
               </button>
             </div>
           </div>
 
+          {/* Campo: Confirmação de Senha */}
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="newPassword"
@@ -140,38 +171,44 @@ export default function RedefinicaoSenhaPage() {
               <button
                 type="button"
                 onClick={() => setMostrarSenha(!mostrarSenha)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-slate-300 cursor-pointer flex items-center justify-center"
               >
                 {mostrarSenha ? (
                   <FaEyeSlash
                     size={18}
-                    className="hover:text-blue-400
-                                transition-colors
-                                duration-200"
+                    className="hover:text-blue-400 transition-colors duration-200"
                   />
                 ) : (
                   <FaEye
                     size={18}
-                    className="hover:text-blue-400
-                                transition-colors
-                                duration-200"
+                    className="hover:text-blue-400 transition-colors duration-200"
                   />
                 )}
               </button>
             </div>
           </div>
 
-          {/* Botão de login */}
+          {/* Botão para redefinir a senha */}
           <button
             type="submit"
-            className="w-full mt-2 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold transition duration-200 cursor-pointer"
+            disabled={carregando || !!sucesso}
+            className="w-full mt-2 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold transition duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Redefinir senha
+            {carregando ? "Atualizando..." : "Redefinir senha"}
           </button>
         </div>
 
-        {/* Mensagem de erro */}
-        {erro && <p className="mt-2 text-sm text-red-500">{erro}</p>}
+        {/* Mensagens de erro e sucesso */}
+        {erro && (
+          <p className="mt-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400 font-medium">
+            {erro}
+          </p>
+        )}
+        {sucesso && (
+          <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-sm text-green-600 dark:text-green-400 font-medium">
+            {sucesso} Redirecionando para o login...
+          </div>
+        )}
       </form>
     </main>
   );
