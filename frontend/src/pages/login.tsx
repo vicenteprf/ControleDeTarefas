@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { api } from "../services/api.ts";
 
 export default function LoginPage() {
@@ -11,6 +12,7 @@ export default function LoginPage() {
 
   // Estado para mensagens de erro
   const [erro, setErro] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const navigate = useNavigate();
 
@@ -69,10 +71,18 @@ export default function LoginPage() {
         onSubmit={handleAcessar}
         className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 sm:p-10"
       >
-        <div className="flex flex-col items-center mb-8">
-          <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
-            Login
+        <div className="flex flex-col items-center gap-1 mb-10">
+          <h1 className="text-2xl font-bold text-slate-100">
+            Controle de Tarefas
           </h1>
+
+          <div className="w-66 h-px bg-slate-500 my-4"></div>
+
+          <h2 className="text-lg font-medium text-slate-300 mt-1">Login</h2>
+
+          <p className="text-sm text-slate-400 mt-1">
+            Acesse sua conta para continuar.
+          </p>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -89,27 +99,67 @@ export default function LoginPage() {
               value={dados.email}
               type="email"
               name="email"
-              id="email"
+              placeholder="Digite seu email"
               className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
           </div>
 
           {/* Campo: Senha */}
-          <div className="flex flex-col gap-1.5">
+          <div className=" flex flex-col gap-1.5">
             <label
               htmlFor="password"
               className="text-sm font-medium text-slate-600 dark:text-slate-400"
             >
               Senha
             </label>
-            <input
-              onChange={handleOnChange}
-              value={dados.password}
-              type="password"
-              name="password"
-              id="password"
-              className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            />
+            <div className="relative">
+              <input
+                onChange={handleOnChange}
+                value={dados.password}
+                type={mostrarSenha ? "text" : "password"}
+                name="password"
+                placeholder="Digite sua senha"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              />
+
+              <button
+                type="button"
+                onClick={() => setMostrarSenha(!mostrarSenha)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white cursor-pointer"
+              >
+                {mostrarSenha ? (
+                  <FaEyeSlash
+                    size={18}
+                    className="hover:text-blue-400
+                    transition-colors
+                    duration-200"
+                  />
+                ) : (
+                  <FaEye
+                    size={18}
+                    className="hover:text-blue-400
+                    transition-colors
+                    duration-200"
+                  />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-row justify-between items-center gap-4 px-2">
+            <Link
+              className="text-sm font-medium text-blue-600"
+              to={"/cadastro"}
+            >
+              Criar conta
+            </Link>
+
+            <Link
+              className="text-sm font-medium text-blue-600"
+              to={"/cadastro"}
+            >
+              Esqueceu a senha?
+            </Link>
           </div>
 
           {/* Botão de login */}
