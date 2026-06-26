@@ -12,6 +12,8 @@ routes.post("/users", UserController.create);
 
 routes.post("/password/forgot", UserController.forgotPassword);
 
+routes.post("/password/reset", UserController.resetPassword);
+
 routes.post("/sessions", SessionController.store);
 
 // As rotas abaixo exigem autenticação
