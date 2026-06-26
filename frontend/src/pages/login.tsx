@@ -71,7 +71,7 @@ export default function LoginPage() {
         onSubmit={handleAcessar}
         className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 sm:p-10"
       >
-        <div className="flex flex-col items-center gap-1 mb-10">
+        <div className="flex flex-col items-center gap-2 mb-10">
           <h1 className="text-2xl font-bold text-slate-100">
             Controle de Tarefas
           </h1>
@@ -146,7 +146,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="flex flex-row justify-between items-center gap-4 px-2">
+          <div className="flex flex-row justify-between items-center gap-4">
             <Link
               className="text-sm font-medium text-blue-600"
               to={"/cadastro"}
@@ -156,7 +156,7 @@ export default function LoginPage() {
 
             <Link
               className="text-sm font-medium text-blue-600"
-              to={"/cadastro"}
+              to={"/recuperacao-senha"}
             >
               Esqueceu a senha?
             </Link>
