@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 
 // Instância do Prisma Client (conexão com o banco de dados)
 const prisma = new PrismaClient();
@@ -45,6 +46,53 @@ class UserController {
     const { password: _, ...userWithoutPassword } = user;
 
     return res.status(201).json(userWithoutPassword);
+  }
+
+  // Gera o token de recuperação e "envia" o link para o usuário
+  async forgotPassword(req: Request, res: Response) {
+    const { email } = req.body;
+
+    try {
+      // Busca o usuário pelo e-mail informado
+      const user = await prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      // Gera um token hexadecimal seguro e temporário
+      const token = crypto.randomBytes(20).toString("hex");
+
+      // Retorna erro 404 se o e-mail não constar no banco de dados
+      if (!user) {
+        return res
+          .status(404)
+          .json({ error: "Este email não está cadastrado em nosso sistema." });
+      }
+
+      // Configura o prazo de validade do token
+      const expirationTime = new Date();
+      expirationTime.setMinutes(expirationTime.getMinutes() + 15);
+
+      // Salva o token gerado e o tempo de expiração na tabela do usuário
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passwordResertToken: token,
+          passwordResetExpires: expirationTime,
+        },
+      });
+
+      // Cria a URL completa que aponta para a página de redefinição no Frontend
+      const resetPasswordUrl = `http://localhost:5173/redefinir-senha?token=${token}`;
+
+      // Retorna confirmação de sucesso
+      return res.status(200).send();
+    } catch {
+      return res
+        .status(500)
+        .json({ error: "Erro interno ao processar a recuperaão de senha." });
+    }
   }
 }
 
