@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
 import { api } from "../services/api.ts";
 
-import type { Task } from "../types/index.ts";
+import type { Task, Filter } from "../types/index.ts";
 
 import { FaTrashAlt, FaPencilAlt, FaSignOutAlt } from "react-icons/fa";
 
@@ -22,6 +22,7 @@ export default function TasksPage() {
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
 
   const [erro, setErro] = useState("");
+  const [filtro, setFiltro] = useState<Filter>("todas");
   const navigate = useNavigate();
 
   // Função auxiliar para o cabeçalho de autenticação
@@ -36,6 +37,20 @@ export default function TasksPage() {
     localStorage.removeItem("token");
     navigate("/");
   }, [navigate]);
+
+  const tarefasFiltradas = tasks.filter((task) => {
+    if (filtro === "todas") {
+      return true;
+    }
+
+    if (filtro === "pendentes") {
+      return task.status === false;
+    }
+
+    if (filtro === "concluidas") {
+      return task.status === true;
+    }
+  });
 
   // Carrega as tarefas ao abrir a página
   useEffect(() => {
@@ -292,6 +307,35 @@ export default function TasksPage() {
         {erro && <p className="text-red-500 text-sm mt-2">{erro}</p>}
       </form>
 
+      <div className="filter-row flex flex-row justify-center items-center gap-4 mt-4">
+        <button
+          type="button"
+          className={`px-2 py-1 text-white text-sm font-semibold rounded-lg  cursor-pointer hover:bg-blue-700 transition
+              ${filtro === "todas" ? "bg-blue-800" : "bg-blue-600"}`}
+          onClick={() => setFiltro("todas")}
+        >
+          Todas
+        </button>
+
+        <button
+          type="button"
+          className={`px-2 py-1 text-white text-sm font-semibold rounded-lg  cursor-pointer hover:bg-blue-700 transition
+              ${filtro === "pendentes" ? "bg-blue-800" : "bg-blue-600"}`}
+          onClick={() => setFiltro("pendentes")}
+        >
+          Pendentes
+        </button>
+
+        <button
+          type="button"
+          className={`px-2 py-1 text-white text-sm font-semibold rounded-lg  cursor-pointer hover:bg-blue-700 transition
+              ${filtro === "concluidas" ? "bg-blue-700" : "bg-blue-600"}`}
+          onClick={() => setFiltro("concluidas")}
+        >
+          Concluidas
+        </button>
+      </div>
+
       {/* Lista de tarefas */}
       <div className="w-full max-w-4xl mt-6 space-y-3">
         {tasks.length === 0 && (
@@ -301,7 +345,7 @@ export default function TasksPage() {
         )}
 
         {Array.isArray(tasks) &&
-          tasks.map((task) => (
+          tarefasFiltradas.map((task) => (
             <div
               key={task.id}
               className="flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm"
