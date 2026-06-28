@@ -6,3 +6,5 @@ export type Task = {
   priority: "baixa" | "media" | "alta";
   dueDate: string;
 };
+
+export type Filter = "todas" | "pendentes" | "concluidas";
