@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
+import nodemailer from "nodemailer";
 
 // Instância do Prisma Client (conexão com o banco de dados)
 const prisma = new PrismaClient();
@@ -85,6 +86,31 @@ class UserController {
 
       // Monta o link de redefinição de senha
       const resetPasswordUrl = `http://localhost:5173/redefinir-senha?token=${token}`;
+
+      const transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Recuperação de Senha - Controle de Tarefas",
+        html: `
+         <div style="font-family: sans-serif; max-width: 600px; color: #333;">
+            <h2>Olá, ${user.name}!</h2>
+            <p>Você solicitou a redefinição de senha para sua conta no Controle de Tarefas.</p>
+            <p>Para escolher uma nova senha, clique no botão abaixo:</p>
+            <a href="${resetPasswordUrl}" style="background-color: #2563eb; color: white; padding: 12px 20px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; margin: 15px 0;">Redefinir Senha</a>
+            <p style="font-size: 12px; color: #666;">Este link é válido por 15 minutos. Se você não solicitou essa alteração, ignore este e-mail.</p>
+          </div> 
+          `,
+      });
 
       // Retorna confirmação da solicitação
       return res.status(200).send();
