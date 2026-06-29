@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 import { AxiosError } from "axios";
 import { api } from "../services/api.ts";
 
@@ -23,6 +24,9 @@ export default function TasksPage() {
 
   const [erro, setErro] = useState("");
   const [filtro, setFiltro] = useState<Filter>("todas");
+  const [loadingSave, setloadingSave] = useState(false);
+  const [loadingDelete, setloadingDelete] = useState<number | null>(null);
+  const [loadingStatus, setLoadingStatus] = useState<number | null>(null);
   const navigate = useNavigate();
 
   // Função auxiliar para o cabeçalho de autenticação
@@ -95,6 +99,8 @@ export default function TasksPage() {
       return;
     }
 
+    setloadingSave(true);
+
     try {
       if (editingTaskId) {
         // Atualiza a tarefa selecionada
@@ -139,6 +145,8 @@ export default function TasksPage() {
       } else {
         setErro("Erro ao salvar a tarefa. Verifique as validações.");
       }
+    } finally {
+      setloadingSave(false);
     }
   }
 
@@ -173,6 +181,8 @@ export default function TasksPage() {
   async function handleDeleteTask(id: number) {
     if (!window.confirm("Tem certeza que deseja excluir esta tarefa?")) return;
 
+    setloadingDelete(id);
+
     try {
       await api.delete(`/task/${id}`, getAuthHeader());
 
@@ -185,11 +195,14 @@ export default function TasksPage() {
       } else {
         setErro("Erro ao excluir a tarefa.");
       }
+    } finally {
+      setloadingDelete(null);
     }
   }
 
   // Alterna o status da tarefa entre pendente e concluída
   async function handleToggleStatus(task: Task) {
+    setLoadingStatus(task.id);
     try {
       const response = await api.put(
         `/task/${task.id}`,
@@ -214,6 +227,8 @@ export default function TasksPage() {
       } else {
         setErro("Erro ao atualizar o status da tarefa.");
       }
+    } finally {
+      setLoadingStatus(null);
     }
   }
 
@@ -287,9 +302,19 @@ export default function TasksPage() {
         <div className="flex gap-2 mt-4">
           <button
             type="submit"
-            className="w-full sm:w-auto px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition cursor-pointer"
+            disabled={loadingSave}
+            className={`w-full sm:w-auto px-6 py-2 rounded-lg text-white text-sm font-semibold transition ${loadingSave ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 cursor-pointer"}`}
           >
-            {editingTaskId ? "Salvar Alterações" : "Criar tarefa"}
+            {loadingSave ? (
+              <>
+                <ClipLoader size={16} color="fff" />
+                <span className="ml-2"> Salvando...</span>
+              </>
+            ) : editingTaskId ? (
+              "Salvar Alteração"
+            ) : (
+              "Criar tarefa"
+            )}
           </button>
 
           {/* Exibido apenas durante a edição */}
@@ -385,13 +410,18 @@ export default function TasksPage() {
                 {/* Botão para alterar o status da tarefa */}
                 <button
                   onClick={() => handleToggleStatus(task)}
+                  disabled={loadingStatus === task.id}
                   className={`text-xs px-3 py-1.5 font-medium rounded-lg transition cursor-pointer ${
                     !task.status
                       ? "text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 border border-green-200 dark:border-green-900"
                       : "text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900"
                   }`}
                 >
-                  {task.status ? "Concluir" : "Reabrir"}
+                  {loadingStatus === task.id
+                    ? "Atualizando..."
+                    : task.status
+                      ? "Reabrir"
+                      : "Concluir"}
                 </button>
 
                 {/* Botão Editar */}
@@ -405,9 +435,14 @@ export default function TasksPage() {
                 {/* Botão Excluir */}
                 <button
                   onClick={() => handleDeleteTask(task.id)}
-                  className="text-xs px-3 py-1.5 font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-200 dark:border-red-900 transition cursor-pointer"
+                  disabled={loadingDelete === task.id}
+                  className={`text-xs px-3 py-1.5 font-medium rounded-lg borde transition ${loadingDelete === task.id ? "opacity-60 cursor-not-allowed" : "text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900 cursor-pointer"}`}
                 >
-                  <FaTrashAlt size={18} />
+                  {loadingDelete === task.id ? (
+                    "Excluindo..."
+                  ) : (
+                    <FaTrashAlt size={18} />
+                  )}
                 </button>
               </div>
             </div>
