@@ -23,7 +23,7 @@ export default function TasksPage() {
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
 
   const [erro, setErro] = useState("");
-  const [filtro, setFiltro] = useState<Filter>("todas");
+  const [filter, setFilter] = useState<Filter>("todas");
   const [loadingSave, setloadingSave] = useState(false);
   const [loadingDelete, setloadingDelete] = useState<number | null>(null);
   const [loadingStatus, setLoadingStatus] = useState<number | null>(null);
@@ -42,19 +42,25 @@ export default function TasksPage() {
     navigate("/");
   }, [navigate]);
 
-  const tarefasFiltradas = tasks.filter((task) => {
-    if (filtro === "todas") {
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === "todas") {
       return true;
     }
 
-    if (filtro === "pendentes") {
+    if (filter === "pendentes") {
       return task.status === false;
     }
 
-    if (filtro === "concluidas") {
+    if (filter === "concluidas") {
       return task.status === true;
     }
   });
+
+  const getEmptyMessage = (): string => {
+    if (filter === "pendentes") return "Nenhuma tarefa pendente.";
+    if (filter === "concluidas") return "Nenhuma tarefa concluida.";
+    return "Nenhuma tarefa criada ainda.";
+  };
 
   // Carrega as tarefas ao abrir a página
   useEffect(() => {
@@ -336,8 +342,8 @@ export default function TasksPage() {
         <button
           type="button"
           className={`px-2 py-1 text-white text-sm font-semibold rounded-lg  cursor-pointer hover:bg-blue-700 transition
-              ${filtro === "todas" ? "bg-blue-800" : "bg-blue-600"}`}
-          onClick={() => setFiltro("todas")}
+              ${filter === "todas" ? "bg-blue-800" : "bg-blue-600"}`}
+          onClick={() => setFilter("todas")}
         >
           Todas
         </button>
@@ -345,8 +351,8 @@ export default function TasksPage() {
         <button
           type="button"
           className={`px-2 py-1 text-white text-sm font-semibold rounded-lg  cursor-pointer hover:bg-blue-700 transition
-              ${filtro === "pendentes" ? "bg-blue-800" : "bg-blue-600"}`}
-          onClick={() => setFiltro("pendentes")}
+              ${filter === "pendentes" ? "bg-blue-800" : "bg-blue-600"}`}
+          onClick={() => setFilter("pendentes")}
         >
           Pendentes
         </button>
@@ -354,8 +360,8 @@ export default function TasksPage() {
         <button
           type="button"
           className={`px-2 py-1 text-white text-sm font-semibold rounded-lg  cursor-pointer hover:bg-blue-700 transition
-              ${filtro === "concluidas" ? "bg-blue-700" : "bg-blue-600"}`}
-          onClick={() => setFiltro("concluidas")}
+              ${filter === "concluidas" ? "bg-blue-700" : "bg-blue-600"}`}
+          onClick={() => setFilter("concluidas")}
         >
           Concluidas
         </button>
@@ -363,90 +369,91 @@ export default function TasksPage() {
 
       {/* Lista de tarefas */}
       <div className="w-full max-w-4xl mt-6 space-y-3">
-        {tasks.length === 0 && (
-          <p className="text-center text-slate-500 dark:text-slate-400">
-            Nenhuma tarefa criada ainda.
-          </p>
-        )}
+        {filteredTasks.length === 0 ? (
+          <div className=" flex flex-col items-center justify-center py-12 px-4 text-center text-white">
+            <p>{getEmptyMessage()}</p>
+          </div>
+        ) : (
+          <div className="space-y-3 w-full">
+            {filteredTasks.map((task) => (
+              <div
+                key={task.id}
+                className="flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm"
+              >
+                <div>
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-100">
+                    {task.title}
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {task.description}
+                  </p>
+                  <div className="flex gap-2 mt-1">
+                    <span className="text-xs text-blue-500 font-medium capitalize">
+                      Prioridade: {task.priority}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      • Limite:{" "}
+                      {task.dueDate
+                        ? new Date(task.dueDate).toLocaleDateString("pt-BR")
+                        : "Sem data"}
+                    </span>
+                  </div>
+                </div>
 
-        {Array.isArray(tasks) &&
-          tarefasFiltradas.map((task) => (
-            <div
-              key={task.id}
-              className="flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm"
-            >
-              <div>
-                <h3 className="font-semibold text-slate-800 dark:text-slate-100">
-                  {task.title}
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {task.description}
-                </p>
-                <div className="flex gap-2 mt-1">
-                  <span className="text-xs text-blue-500 font-medium capitalize">
-                    Prioridade: {task.priority}
+                {/* Ações da tarefa */}
+                <div className="flex flex-row justify-center items-center gap-2">
+                  <span
+                    className={`text-xs px-3 py-1 rounded-full font-medium mr-2 ${
+                      task.status
+                        ? "bg-green-100 text-green-600"
+                        : "bg-yellow-100 text-yellow-600"
+                    }`}
+                  >
+                    {task.status ? "Concluída" : "Pendente"}
                   </span>
-                  <span className="text-xs text-slate-400">
-                    • Limite:{" "}
-                    {task.dueDate
-                      ? new Date(task.dueDate).toLocaleDateString("pt-BR")
-                      : "Sem data"}
-                  </span>
+
+                  {/* Botão para alterar o status da tarefa */}
+                  <button
+                    onClick={() => handleToggleStatus(task)}
+                    disabled={loadingStatus === task.id}
+                    className={`text-xs px-3 py-1.5 font-medium rounded-lg transition cursor-pointer ${
+                      !task.status
+                        ? "text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 border border-green-200 dark:border-green-900"
+                        : "text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900"
+                    }`}
+                  >
+                    {loadingStatus === task.id
+                      ? "Atualizando..."
+                      : task.status
+                        ? "Reabrir"
+                        : "Concluir"}
+                  </button>
+
+                  {/* Botão Editar */}
+                  <button
+                    onClick={() => handleStartEdit(task)}
+                    className="text-xs px-3 py-1.5 font-medium rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 border border-blue-200 dark:border-blue-900 transition cursor-pointer"
+                  >
+                    <FaPencilAlt size={18} />
+                  </button>
+
+                  {/* Botão Excluir */}
+                  <button
+                    onClick={() => handleDeleteTask(task.id)}
+                    disabled={loadingDelete === task.id}
+                    className={`text-xs px-3 py-1.5 font-medium rounded-lg borde transition ${loadingDelete === task.id ? "opacity-60 cursor-not-allowed" : "text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900 cursor-pointer"}`}
+                  >
+                    {loadingDelete === task.id ? (
+                      "Excluindo..."
+                    ) : (
+                      <FaTrashAlt size={18} />
+                    )}
+                  </button>
                 </div>
               </div>
-
-              {/* Ações da tarefa */}
-              <div className="flex flex-row justify-center items-center gap-2">
-                <span
-                  className={`text-xs px-3 py-1 rounded-full font-medium mr-2 ${
-                    task.status
-                      ? "bg-green-100 text-green-600"
-                      : "bg-yellow-100 text-yellow-600"
-                  }`}
-                >
-                  {task.status ? "Concluída" : "Pendente"}
-                </span>
-
-                {/* Botão para alterar o status da tarefa */}
-                <button
-                  onClick={() => handleToggleStatus(task)}
-                  disabled={loadingStatus === task.id}
-                  className={`text-xs px-3 py-1.5 font-medium rounded-lg transition cursor-pointer ${
-                    !task.status
-                      ? "text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 border border-green-200 dark:border-green-900"
-                      : "text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900"
-                  }`}
-                >
-                  {loadingStatus === task.id
-                    ? "Atualizando..."
-                    : task.status
-                      ? "Reabrir"
-                      : "Concluir"}
-                </button>
-
-                {/* Botão Editar */}
-                <button
-                  onClick={() => handleStartEdit(task)}
-                  className="text-xs px-3 py-1.5 font-medium rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 border border-blue-200 dark:border-blue-900 transition cursor-pointer"
-                >
-                  <FaPencilAlt size={18} />
-                </button>
-
-                {/* Botão Excluir */}
-                <button
-                  onClick={() => handleDeleteTask(task.id)}
-                  disabled={loadingDelete === task.id}
-                  className={`text-xs px-3 py-1.5 font-medium rounded-lg borde transition ${loadingDelete === task.id ? "opacity-60 cursor-not-allowed" : "text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900 cursor-pointer"}`}
-                >
-                  {loadingDelete === task.id ? (
-                    "Excluindo..."
-                  ) : (
-                    <FaTrashAlt size={18} />
-                  )}
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );
