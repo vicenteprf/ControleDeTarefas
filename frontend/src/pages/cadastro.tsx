@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { api } from "../services/api.ts";
 
+import toast, { Toaster } from "react-hot-toast";
+
 export default function CadastroPage() {
   // Estado do formulário de cadastro
   const [dados, setDados] = useState({
@@ -11,8 +13,6 @@ export default function CadastroPage() {
     password: "",
   });
 
-  // Estado para mensagens de erro
-  const [erro, setErro] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ export default function CadastroPage() {
 
     // Validação simples de campos obrigatórios
     if (!dados.email.trim() || !dados.name.trim() || !dados.password.trim()) {
-      setErro("Preencha todos os campos.");
+      toast.error("Preencha todos os campos.");
       return;
     }
 
@@ -48,14 +48,11 @@ export default function CadastroPage() {
         password: "",
       });
 
-      // Limpa mensagens de erro
-      setErro("");
-
       // Redireciona para a página de login
       navigate("/");
     } catch {
       // Exibe erro caso a requisição falhe
-      setErro("Erro ao cadastrar usuário.");
+      toast.error("Erro ao cadastrar usuário.");
     }
   }
 
@@ -168,10 +165,9 @@ export default function CadastroPage() {
             </Link>
           </p>
         </div>
-
-        {/* Mensagem de erro */}
-        {erro && <p className="mt-2 text-sm text-red-500">{erro}</p>}
       </form>
+
+      <Toaster />
     </main>
   );
 }

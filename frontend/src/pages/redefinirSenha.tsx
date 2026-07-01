@@ -4,6 +4,8 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { AxiosError } from "axios";
 import { api } from "../services/api.ts";
 
+import toast, { Toaster } from "react-hot-toast";
+
 export default function RedefinicaoSenhaPage() {
   // Estado do formulário de redefinição
   const [dados, setDados] = useState({
@@ -11,10 +13,6 @@ export default function RedefinicaoSenhaPage() {
     newPassword: "",
   });
 
-  // Estado para mensagens de erro
-  const [erro, setErro] = useState("");
-  // Estado para mensagens de sucesso
-  const [sucesso, setSucesso] = useState("");
   // Controla o estado de carregamento da requisição
   const [carregando, setCarregando] = useState(false);
   // Controla a exibição da senha nos campos
@@ -38,29 +36,27 @@ export default function RedefinicaoSenhaPage() {
   // Envia os dados para salvar a nova senha no backend
   async function handleRedefinirSenha(e: React.FormEvent) {
     e.preventDefault();
-    setErro("");
-    setSucesso("");
 
     // Valida os dados antes de enviar a requisição
     if (!token) {
-      setErro(
+      toast.error(
         "O token de recuperação está ausente ou é inválido. Solicite um novo link.",
       );
       return;
     }
 
     if (!dados.password.trim() || !dados.newPassword.trim()) {
-      setErro("Preencha todos os campos.");
+      toast.error("Preencha todos os campos.");
       return;
     }
 
     if (dados.password.length < 6) {
-      setErro("A nova senha deve conter no mínimo 6 caracteres.");
+      toast.error("A nova senha deve conter no mínimo 6 caracteres.");
       return;
     }
 
     if (dados.password !== dados.newPassword) {
-      setErro("A nova senha e a confirmação não coincidem.");
+      toast.error("A nova senha e a confirmação não coincidem.");
       return;
     }
 
@@ -73,7 +69,7 @@ export default function RedefinicaoSenhaPage() {
         password: dados.password,
       });
 
-      setSucesso("Sua senha foi redefinida com sucesso!");
+      toast.success("Sua senha foi redefinida com sucesso!");
 
       // Limpa os campos do formulário
       setDados({ password: "", newPassword: "" });
@@ -87,9 +83,9 @@ export default function RedefinicaoSenhaPage() {
 
       // Exibe a mensagem de erro retornada pelo backend
       if (err.response && err.response.data && err.response.data.error) {
-        setErro(err.response.data.error);
+        toast.error(err.response.data.error);
       } else {
-        setErro("Erro ao redefinir a senha. Tente novamente mais tarde.");
+        toast.error("Erro ao redefinir a senha. Tente novamente mais tarde.");
       }
     } finally {
       setCarregando(false);
@@ -191,25 +187,14 @@ export default function RedefinicaoSenhaPage() {
           {/* Botão para redefinir a senha */}
           <button
             type="submit"
-            disabled={carregando || !!sucesso}
+            disabled={carregando}
             className="w-full mt-2 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold transition duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {carregando ? "Atualizando..." : "Redefinir senha"}
           </button>
         </div>
-
-        {/* Mensagens de erro e sucesso */}
-        {erro && (
-          <p className="mt-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400 font-medium">
-            {erro}
-          </p>
-        )}
-        {sucesso && (
-          <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-sm text-green-600 dark:text-green-400 font-medium">
-            {sucesso} Redirecionando para o login...
-          </div>
-        )}
       </form>
+      <Toaster />
     </main>
   );
 }

@@ -4,6 +4,8 @@ import { ClipLoader } from "react-spinners";
 import { AxiosError } from "axios";
 import { api } from "../services/api.ts";
 
+import toast, { Toaster } from "react-hot-toast";
+
 import type { Task, Filter } from "../types/index.ts";
 
 import { FaTrashAlt, FaPencilAlt, FaSignOutAlt } from "react-icons/fa";
@@ -79,7 +81,7 @@ export default function TasksPage() {
         if (axiosError.response?.status === 401) {
           handleLogout();
         } else {
-          setErro("Erro ao carregar as tarefas.");
+          toast.error("Erro ao carregar as tarefas.");
         }
       }
     }
@@ -101,7 +103,7 @@ export default function TasksPage() {
     e.preventDefault();
 
     if (!form.title.trim() || !form.description.trim() || !form.dueDate) {
-      setErro("Preencha todos os campos obrigatórios.");
+      toast.error("Preencha todos os campos obrigatórios.");
       return;
     }
 
@@ -144,12 +146,13 @@ export default function TasksPage() {
         dueDate: "",
       });
       setErro("");
+      toast.success("Tarefa criada com sucesso!");
     } catch (error) {
       const axiosError = error as AxiosError;
       if (axiosError.response?.status === 401) {
         handleLogout();
       } else {
-        setErro("Erro ao salvar a tarefa. Verifique as validações.");
+        toast.error("Erro ao salvar a tarefa. Verifique as validações.");
       }
     } finally {
       setloadingSave(false);
@@ -199,7 +202,7 @@ export default function TasksPage() {
       if (axiosError.response?.status === 401) {
         handleLogout();
       } else {
-        setErro("Erro ao excluir a tarefa.");
+        toast.error("Erro ao excluir a tarefa.");
       }
     } finally {
       setloadingDelete(null);
@@ -231,7 +234,7 @@ export default function TasksPage() {
       if (axiosError.response?.status === 401) {
         handleLogout();
       } else {
-        setErro("Erro ao atualizar o status da tarefa.");
+        toast.error("Erro ao atualizar o status da tarefa.");
       }
     } finally {
       setLoadingStatus(null);
@@ -455,6 +458,8 @@ export default function TasksPage() {
           </div>
         )}
       </div>
+
+      <Toaster />
     </main>
   );
 }

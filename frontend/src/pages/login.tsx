@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { api } from "../services/api.ts";
 
+import toast, { Toaster } from "react-hot-toast";
+
 export default function LoginPage() {
   // Estado do formulário de login
   const [dados, setDados] = useState({
@@ -10,8 +12,6 @@ export default function LoginPage() {
     password: "",
   });
 
-  // Estado para mensagens de erro
-  const [erro, setErro] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ export default function LoginPage() {
 
     // Validação simples de campos obrigatórios
     if (!dados.email.trim() || !dados.password.trim()) {
-      setErro("Preencha todos os campos.");
+      toast.error("Preencha todos os campos.");
       return;
     }
 
@@ -54,14 +54,11 @@ export default function LoginPage() {
         password: "",
       });
 
-      // Limpa mensagens de erro
-      setErro("");
-
       // Redireciona para a página de tarefas
       navigate("/tasks");
     } catch {
       // Exibe erro caso o login falhe
-      setErro("Erro ao realizar login.");
+      toast.error("Erro ao realizar login.");
     }
   }
 
@@ -170,10 +167,9 @@ export default function LoginPage() {
             Entrar
           </button>
         </div>
-
-        {/* Mensagem de erro */}
-        {erro && <p className="mt-2 text-sm text-red-500">{erro}</p>}
       </form>
+
+      <Toaster />
     </main>
   );
 }

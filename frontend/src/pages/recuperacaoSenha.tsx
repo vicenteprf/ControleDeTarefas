@@ -3,13 +3,11 @@ import { AxiosError } from "axios";
 import { Link } from "react-router-dom";
 import { api } from "../services/api.ts";
 
+import toast, { Toaster } from "react-hot-toast";
+
 export default function RecuperacaoSenhaPage() {
   // Estado do formulário
   const [dados, setDados] = useState({ email: "" });
-  // Estado para mensagens de erro
-  const [erro, setErro] = useState("");
-  // Estado para mensagens de sucesso
-  const [sucesso, setSucesso] = useState("");
   // Controla o estado de carregamento da requisição
   const [carregando, setCarregando] = useState(false);
 
@@ -25,12 +23,10 @@ export default function RecuperacaoSenhaPage() {
   // Envia a solicitação de recuperação de senha
   async function handleRecuperarSenha(e: React.FormEvent) {
     e.preventDefault();
-    setErro("");
-    setSucesso("");
 
     // Verifica se o campo de e-mail foi preenchido
     if (!dados.email.trim()) {
-      setErro("Por favor, preencha o campo de e-mail.");
+      toast.error("Por favor, preencha o campo de e-mail.");
       return;
     }
 
@@ -41,7 +37,7 @@ export default function RecuperacaoSenhaPage() {
       await api.post("/password/forgot", { email: dados.email });
 
       // Evita informar se o e-mail está cadastrado no sistema
-      setSucesso(
+      toast.success(
         "Se o e-mail estiver cadastrado, um link de redefinição será enviado para a sua caixa de entrada.",
       );
       setDados({ email: "" });
@@ -51,9 +47,9 @@ export default function RecuperacaoSenhaPage() {
 
       // Verifica o código de resposta da requisição
       if (err.response && err.response.status === 404) {
-        setErro("Este e-mail não está cadastrado em nosso sistema.");
+        toast.error("Este e-mail não está cadastrado em nosso sistema.");
       } else {
-        setErro(
+        toast.error(
           "Ocorreu um erro ao processar a solicitação. Tente novamente mais tarde.",
         );
       }
@@ -116,17 +112,8 @@ export default function RecuperacaoSenhaPage() {
             </Link>
           </div>
         </div>
-
-        {/* Mensagens de erro e sucesso */}
-        {erro && (
-          <p className="mt-4 p-3 text-sm text-red-600 text-center">{erro}</p>
-        )}
-        {sucesso && (
-          <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-sm text-green-600 dark:text-green-400 font-medium">
-            {sucesso}
-          </div>
-        )}
       </form>
+      <Toaster />
     </main>
   );
 }
