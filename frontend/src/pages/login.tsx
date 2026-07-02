@@ -12,8 +12,10 @@ export default function LoginPage() {
     password: "",
   });
 
+  // Controla a exibição da senha no campo
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
+  // Controla a exibição da senha no campo
   const navigate = useNavigate();
 
   // Atualiza os campos do formulário conforme o usuário digita
@@ -26,7 +28,7 @@ export default function LoginPage() {
     });
   }
 
-  // Envia os dados para autenticação do usuário
+  // Valida os dados e realiza a autenticação do usuário
   async function handleAcessar(e: React.FormEvent) {
     e.preventDefault();
 
@@ -102,7 +104,7 @@ export default function LoginPage() {
           </div>
 
           {/* Campo: Senha */}
-          <div className=" flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5">
             <label
               htmlFor="password"
               className="text-sm font-medium text-slate-600 dark:text-slate-400"
@@ -144,6 +146,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-row justify-between items-center gap-4">
+            {/* Link para criar uma conta */}
             <Link
               className="text-sm font-medium text-blue-600"
               to={"/cadastro"}
@@ -151,6 +154,7 @@ export default function LoginPage() {
               Criar conta
             </Link>
 
+            {/* Link para recuperação de senha */}
             <Link
               className="text-sm font-medium text-blue-600"
               to={"/recuperacao-senha"}
@@ -169,6 +173,7 @@ export default function LoginPage() {
         </div>
       </form>
 
+      {/* Container responsável por exibir os toast de feedback */}
       <Toaster />
     </main>
   );
