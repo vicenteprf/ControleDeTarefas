@@ -20,7 +20,7 @@ export default function RecuperacaoSenhaPage() {
     });
   }
 
-  // Envia a solicitação de recuperação de senha
+  // Valida o e-mail e solicita a recuperação de senha
   async function handleRecuperarSenha(e: React.FormEvent) {
     e.preventDefault();
 
@@ -36,16 +36,16 @@ export default function RecuperacaoSenhaPage() {
       // Solicita ao backend o envio do link de recuperação
       await api.post("/password/forgot", { email: dados.email });
 
-      // Evita informar se o e-mail está cadastrado no sistema
+      // Exibe uma mensagem genérica por segurança
       toast.success(
         "Se o e-mail estiver cadastrado, um link de redefinição será enviado para a sua caixa de entrada.",
       );
       setDados({ email: "" });
     } catch (error) {
-      // Trata o caso em que o e-mail não está cadastrado
+      // Trata os erros retornados pelo backend
       const err = error as AxiosError;
 
-      // Verifica o código de resposta da requisição
+      // Verifica se o e-mail não está cadastrado
       if (err.response && err.response.status === 404) {
         toast.error("Este e-mail não está cadastrado em nosso sistema.");
       } else {
@@ -104,6 +104,7 @@ export default function RecuperacaoSenhaPage() {
           </button>
 
           <div className="flex flex-row justify-center items-center mt-2">
+            {/* Link para retornar à tela de login */}
             <Link
               className="text-sm font-medium text-blue-600 hover:underline"
               to={"/"}
@@ -113,6 +114,7 @@ export default function RecuperacaoSenhaPage() {
           </div>
         </div>
       </form>
+      {/* Container responsável por exibir os toast de feedback */}
       <Toaster />
     </main>
   );
