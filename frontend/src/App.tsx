@@ -16,6 +16,7 @@ function App() {
         <Route path="/cadastro" element={<CadastroPage />} />
         <Route path="/recuperacao-senha" element={<RecuperacaoSenhaPage />} />
         <Route path="/redefinir-senha" element={<RedefinicaoSenhaPage />} />
+        {/* Rota protegida por autenticação */}
         <Route
           path="/tasks"
           element={
