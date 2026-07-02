@@ -13,8 +13,10 @@ export default function CadastroPage() {
     password: "",
   });
 
+  // Controla a exibição da senha no campo
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
+  // Utilizado para redirecionar o usuário após o cadastro
   const navigate = useNavigate();
 
   // Atualiza os campos do formulário conforme o usuário digita
@@ -27,7 +29,7 @@ export default function CadastroPage() {
     });
   }
 
-  // Envia os dados para criação de um novo usuário
+  // Valida os dados e realiza o cadastro do usuário
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
 
@@ -91,7 +93,7 @@ export default function CadastroPage() {
             />
           </div>
 
-          {/* Campo: Email */}
+          {/* Campo: E-mail */}
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="email"
@@ -159,7 +161,8 @@ export default function CadastroPage() {
           </button>
 
           <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-4 text-center">
-            Já tem uma conta?{" "}
+            Já tem uma conta?
+            {/* Link para retornar à tela de login */}
             <Link to={"/"} className="text-sm font-medium text-blue-600">
               Entre aqui
             </Link>
@@ -167,6 +170,7 @@ export default function CadastroPage() {
         </div>
       </form>
 
+      {/* Container responsável por exibir os toast de feedback */}
       <Toaster />
     </main>
   );
