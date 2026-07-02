@@ -11,6 +11,7 @@ import type { Task, Filter } from "../types/index.ts";
 import { FaTrashAlt, FaPencilAlt, FaSignOutAlt } from "react-icons/fa";
 
 export default function TasksPage() {
+  // Lista de tarefas do usuário
   const [tasks, setTasks] = useState<Task[]>([]);
 
   // Estado dos campos do formulário
@@ -24,11 +25,15 @@ export default function TasksPage() {
   // Controla qual tarefa está sendo editada
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
 
-  const [erro, setErro] = useState("");
+  // Controla o filtro aplicado na lista de tarefas
   const [filter, setFilter] = useState<Filter>("todas");
+  // Indica quando uma tarefa está sendo salva ou editada
   const [loadingSave, setloadingSave] = useState(false);
+  // Armazena o ID da tarefa que está sendo excluída
   const [loadingDelete, setloadingDelete] = useState<number | null>(null);
+  // Armazena o ID da tarefa que está tendo o status atualizado
   const [loadingStatus, setLoadingStatus] = useState<number | null>(null);
+  // Responsável pela navegação entre as páginas
   const navigate = useNavigate();
 
   // Função auxiliar para o cabeçalho de autenticação
@@ -39,11 +44,13 @@ export default function TasksPage() {
     [],
   );
 
+  // Remove o token e redireciona o usuário para o login
   const handleLogout = useCallback((): void => {
     localStorage.removeItem("token");
     navigate("/");
   }, [navigate]);
 
+  // Filtra as tarefas de acordo com a opção selecionada
   const filteredTasks = tasks.filter((task) => {
     if (filter === "todas") {
       return true;
@@ -58,6 +65,7 @@ export default function TasksPage() {
     }
   });
 
+  // Retorna a mensagem exibida quando não há tarefas no filtro selecionado
   const getEmptyMessage = (): string => {
     if (filter === "pendentes") return "Nenhuma tarefa pendente.";
     if (filter === "concluidas") return "Nenhuma tarefa concluida.";
@@ -89,6 +97,7 @@ export default function TasksPage() {
     loadTasks();
   }, [handleLogout, getAuthHeader]);
 
+  // Atualiza os campos do formulário
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
@@ -123,7 +132,7 @@ export default function TasksPage() {
           getAuthHeader(),
         );
 
-        // Atualiza a tarefa editada na lista do estado local
+        // Atualiza a tarefa na lista
         setTasks((prev) =>
           prev.map((task) =>
             task.id === editingTaskId ? response.data : task,
@@ -145,7 +154,6 @@ export default function TasksPage() {
         priority: "baixa",
         dueDate: "",
       });
-      setErro("");
       toast.success("Tarefa criada com sucesso!");
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -163,7 +171,7 @@ export default function TasksPage() {
   function handleStartEdit(task: Task) {
     setEditingTaskId(task.id);
 
-    // Cancela a edição atual e limpa o formulário
+    // Formata a data para o padrão do input (YYYY-MM-DD)
     const formattedDate = task.dueDate ? task.dueDate.split("T")[0] : "";
 
     setForm({
@@ -183,10 +191,9 @@ export default function TasksPage() {
       priority: "baixa",
       dueDate: "",
     });
-    setErro("");
   }
 
-  // Exclui uma tarefa
+  // Exclui a tarefa selecionada
   async function handleDeleteTask(id: number) {
     if (!window.confirm("Tem certeza que deseja excluir esta tarefa?")) return;
 
@@ -242,21 +249,22 @@ export default function TasksPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col items-center p-6">
+    <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col items-center p-4 sm:p-6">
       {/* Cabeçalho da página */}
-      <div className="w-full max-w-4xl flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+      <div className="w-full max-w-4xl flex items-center justify-between mb-4 sm:mb-6 gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 truncate">
             Minhas Tarefas
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             Organize suas atividades do dia
           </p>
         </div>
 
         <button
           onClick={handleLogout}
-          className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition border border-red-200 dark:border-red-900 cursor-pointer"
+          aria-label="Sair"
+          className="shrink-0 w-10 h-10 flex items-center justify-center text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition border border-red-200 dark:border-red-900 cursor-pointer"
         >
           <FaSignOutAlt size={18} />
         </button>
@@ -265,19 +273,19 @@ export default function TasksPage() {
       {/* Formulário de criação e edição */}
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-4xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm"
+        className="w-full max-w-4xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 sm:p-6 shadow-sm"
       >
         <h2 className="text-sm font-semibold mb-3 text-blue-600 dark:text-blue-400">
           {editingTaskId ? "✍️ Editando Tarefa" : "➕ Nova Tarefa"}
         </h2>
 
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <input
             name="title"
             value={form.title}
             onChange={handleChange}
             placeholder="Título da tarefa"
-            className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 sm:py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <input
@@ -285,14 +293,14 @@ export default function TasksPage() {
             value={form.description}
             onChange={handleChange}
             placeholder="Descrição"
-            className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 sm:py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <select
             name="priority"
             value={form.priority}
             onChange={handleChange}
-            className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 sm:py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="baixa">Baixa</option>
             <option value="media">Média</option>
@@ -304,15 +312,15 @@ export default function TasksPage() {
             name="dueDate"
             value={form.dueDate}
             onChange={handleChange}
-            className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 sm:py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
-        <div className="flex gap-2 mt-4">
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
           <button
             type="submit"
             disabled={loadingSave}
-            className={`w-full sm:w-auto px-6 py-2 rounded-lg text-white text-sm font-semibold transition ${loadingSave ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 cursor-pointer"}`}
+            className={`w-full sm:w-auto px-6 py-2.5 sm:py-2 rounded-lg text-white text-sm font-semibold transition flex items-center justify-center ${loadingSave ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 cursor-pointer"}`}
           >
             {loadingSave ? (
               <>
@@ -331,20 +339,19 @@ export default function TasksPage() {
             <button
               type="button"
               onClick={handleCancelEdit}
-              className="px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium transition cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-medium transition cursor-pointer"
             >
               Cancelar
             </button>
           )}
         </div>
-
-        {erro && <p className="text-red-500 text-sm mt-2">{erro}</p>}
       </form>
 
-      <div className="filter-row flex flex-row justify-center items-center gap-4 mt-4">
+      {/* Botões para filtrar as tarefas */}
+      <div className="filter-row w-full max-w-4xl flex flex-row justify-center items-center gap-2 sm:gap-4 mt-4 overflow-x-auto px-1">
         <button
           type="button"
-          className={`px-2 py-1 text-white text-sm font-semibold rounded-lg  cursor-pointer hover:bg-blue-700 transition
+          className={`shrink-0 px-3 py-2 sm:px-2 sm:py-1 text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-blue-700 transition
               ${filter === "todas" ? "bg-blue-800" : "bg-blue-600"}`}
           onClick={() => setFilter("todas")}
         >
@@ -353,7 +360,7 @@ export default function TasksPage() {
 
         <button
           type="button"
-          className={`px-2 py-1 text-white text-sm font-semibold rounded-lg  cursor-pointer hover:bg-blue-700 transition
+          className={`shrink-0 px-3 py-2 sm:px-2 sm:py-1 text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-blue-700 transition
               ${filter === "pendentes" ? "bg-blue-800" : "bg-blue-600"}`}
           onClick={() => setFilter("pendentes")}
         >
@@ -362,7 +369,7 @@ export default function TasksPage() {
 
         <button
           type="button"
-          className={`px-2 py-1 text-white text-sm font-semibold rounded-lg  cursor-pointer hover:bg-blue-700 transition
+          className={`shrink-0 px-3 py-2 sm:px-2 sm:py-1 text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-blue-700 transition
               ${filter === "concluidas" ? "bg-blue-700" : "bg-blue-600"}`}
           onClick={() => setFilter("concluidas")}
         >
@@ -373,7 +380,7 @@ export default function TasksPage() {
       {/* Lista de tarefas */}
       <div className="w-full max-w-4xl mt-6 space-y-3">
         {filteredTasks.length === 0 ? (
-          <div className=" flex flex-col items-center justify-center py-12 px-4 text-center text-white">
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center text-white">
             <p>{getEmptyMessage()}</p>
           </div>
         ) : (
@@ -381,16 +388,16 @@ export default function TasksPage() {
             {filteredTasks.map((task) => (
               <div
                 key={task.id}
-                className="flex items-center justify-between bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm"
+                className="flex flex-col items-stretch gap-3 min-[800px]:flex-row min-[800px]:items-center min-[800px]:justify-between min-[800px]:gap-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 sm:p-4 shadow-sm"
               >
-                <div>
+                <div className="min-w-0">
                   <h3 className="font-semibold text-slate-800 dark:text-slate-100">
                     {task.title}
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     {task.description}
                   </p>
-                  <div className="flex gap-2 mt-1">
+                  <div className="flex flex-wrap gap-x-2 gap-y-1 mt-1">
                     <span className="text-xs text-blue-500 font-medium capitalize">
                       Prioridade: {task.priority}
                     </span>
@@ -404,9 +411,9 @@ export default function TasksPage() {
                 </div>
 
                 {/* Ações da tarefa */}
-                <div className="flex flex-row justify-center items-center gap-2">
+                <div className="w-full flex flex-wrap items-center gap-2 min-[800px]:justify-end">
                   <span
-                    className={`text-xs px-3 py-1 rounded-full font-medium mr-2 ${
+                    className={`text-xs px-3 py-1 rounded-full font-medium ${
                       task.status
                         ? "bg-green-100 text-green-600"
                         : "bg-yellow-100 text-yellow-600"
@@ -419,7 +426,7 @@ export default function TasksPage() {
                   <button
                     onClick={() => handleToggleStatus(task)}
                     disabled={loadingStatus === task.id}
-                    className={`text-xs px-3 py-1.5 font-medium rounded-lg transition cursor-pointer ${
+                    className={`text-xs px-3 py-2 sm:py-1.5 font-medium rounded-lg transition cursor-pointer ${
                       !task.status
                         ? "text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 border border-green-200 dark:border-green-900"
                         : "text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-900"
@@ -432,24 +439,26 @@ export default function TasksPage() {
                         : "Concluir"}
                   </button>
 
-                  {/* Botão Editar */}
+                  {/* Botão para editar a tarefa */}
                   <button
                     onClick={() => handleStartEdit(task)}
-                    className="text-xs px-3 py-1.5 font-medium rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 border border-blue-200 dark:border-blue-900 transition cursor-pointer"
+                    aria-label="Editar tarefa"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 border border-blue-200 dark:border-blue-900 transition cursor-pointer"
                   >
-                    <FaPencilAlt size={18} />
+                    <FaPencilAlt size={16} />
                   </button>
 
-                  {/* Botão Excluir */}
+                  {/* Botão para excluir a tarefa */}
                   <button
                     onClick={() => handleDeleteTask(task.id)}
                     disabled={loadingDelete === task.id}
-                    className={`text-xs px-3 py-1.5 font-medium rounded-lg borde transition ${loadingDelete === task.id ? "opacity-60 cursor-not-allowed" : "text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900 cursor-pointer"}`}
+                    aria-label="Excluir tarefa"
+                    className={`min-w-9 h-9 px-2 flex items-center justify-center rounded-lg border text-xs font-medium transition ${loadingDelete === task.id ? "opacity-60 cursor-not-allowed border-red-200 dark:border-red-900 text-red-600" : "text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900 cursor-pointer"}`}
                   >
                     {loadingDelete === task.id ? (
                       "Excluindo..."
                     ) : (
-                      <FaTrashAlt size={18} />
+                      <FaTrashAlt size={16} />
                     )}
                   </button>
                 </div>
@@ -459,6 +468,7 @@ export default function TasksPage() {
         )}
       </div>
 
+      {/* Exibe notificações da aplicação */}
       <Toaster />
     </main>
   );
