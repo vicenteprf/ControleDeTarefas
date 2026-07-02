@@ -18,9 +18,10 @@ export default function RedefinicaoSenhaPage() {
   // Controla a exibição da senha nos campos
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
+  // Utilizado para redirecionar o usuário após redefinir a senha
   const navigate = useNavigate();
 
-  // Obtém o token enviado na URL
+  // Obtém o token de recuperação enviado pela URL
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
@@ -33,7 +34,7 @@ export default function RedefinicaoSenhaPage() {
     });
   }
 
-  // Envia os dados para salvar a nova senha no backend
+  // Valida os dados e envia a nova senha para o backend
   async function handleRedefinirSenha(e: React.FormEvent) {
     e.preventDefault();
 
@@ -107,7 +108,7 @@ export default function RedefinicaoSenhaPage() {
         </div>
 
         <div className="flex flex-col gap-4">
-          {/* Campo: Confirmação da senha */}
+          {/* Campo: Nova senha */}
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="password"
@@ -125,9 +126,9 @@ export default function RedefinicaoSenhaPage() {
                 placeholder="Digite a nova senha"
                 className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               />
+              {/* Alterna entre exibir e ocultar a senha*/}
               <button
                 type="button"
-                // Alterna entre exibir e ocultar a senha
                 onClick={() => setMostrarSenha(!mostrarSenha)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-slate-300 cursor-pointer flex items-center justify-center"
               >
@@ -194,6 +195,7 @@ export default function RedefinicaoSenhaPage() {
           </button>
         </div>
       </form>
+      {/* Container responsável por exibir os toast de feedback */}
       <Toaster />
     </main>
   );
