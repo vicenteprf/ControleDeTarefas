@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/login.tsx";
 import CadastroPage from "./pages/cadastro.tsx";
-import TasksPage from "./pages/TasksPageNew.tsx";
+import TasksPage from "./pages/TasksPage.tsx";
 import RecuperacaoSenhaPage from "./pages/recuperacaoSenha.tsx";
 import RedefinicaoSenhaPage from "./pages/redefinirSenha.tsx";
 
