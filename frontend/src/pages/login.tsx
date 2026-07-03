@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { api } from "../services/api.ts";
 
+import axios from "axios";
+
 import toast, { Toaster } from "react-hot-toast";
 
 export default function LoginPage() {
@@ -58,9 +60,16 @@ export default function LoginPage() {
 
       // Redireciona para a página de tarefas
       navigate("/tasks");
-    } catch {
-      // Exibe erro caso o login falhe
-      toast.error("Erro ao realizar login.");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const errorMessage =
+          error.response?.data?.message || "Erro ao realizar login.";
+
+        toast.error(errorMessage);
+        return;
+      }
+
+      toast.error("Erro inesperado ao realizar login.");
     }
   }
 
