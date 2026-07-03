@@ -85,7 +85,7 @@ class UserController {
       });
 
       // Monta o link de redefinição de senha
-      const resetPasswordUrl = `http://localhost:5173/redefinir-senha?token=${token}`;
+      const resetPasswordUrl = `${process.env.FRONTEND_URL}/redefinir-senha?token=${token}`;
 
       const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
