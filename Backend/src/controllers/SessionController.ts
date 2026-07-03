@@ -24,7 +24,7 @@ class SessionControllers {
     if (!userExist) {
       return res
         .status(401)
-        .json({ error: "Este  email não esta cadastrado." });
+        .json({ message: "Este  email não esta cadastrado." });
     }
 
     // Compara a senha enviada com a senha criptografada no banco
@@ -32,7 +32,7 @@ class SessionControllers {
 
     // Se a senha for inválida, bloqueia o acesso
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Senha inválida." });
+      return res.status(401).json({ message: "Senha inválida." });
     }
 
     // Extrai dados do usuário para o token e resposta
