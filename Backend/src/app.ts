@@ -15,7 +15,7 @@ class App {
   private middlewares() {
     this.server.use(
       cors({
-        origin: "https://controle-de-tarefas-zivz.vercel.app",
+        origin: ["http://localhost:5173", process.env.FRONTEND_URL!],
       }),
     );
 
