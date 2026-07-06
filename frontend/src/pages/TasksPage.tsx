@@ -279,7 +279,7 @@ export default function TasksPage() {
           {editingTaskId ? "✍️ Editando Tarefa" : "➕ Nova Tarefa"}
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 overflow-hidden sm:grid-cols-2 gap-3 sm:gap-4">
           <input
             name="title"
             value={form.title}
@@ -312,7 +312,7 @@ export default function TasksPage() {
             name="dueDate"
             value={form.dueDate}
             onChange={handleChange}
-            className="w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 sm:py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+            className="w-full min-w-0 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2.5 sm:py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
           />
         </div>
 
