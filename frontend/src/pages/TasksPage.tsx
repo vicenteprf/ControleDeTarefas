@@ -279,7 +279,7 @@ export default function TasksPage() {
           {editingTaskId ? "✍️ Editando Tarefa" : "➕ Nova Tarefa"}
         </h2>
 
-        <div className="grid grid-cols-1 overflow-hidden sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <input
             name="title"
             value={form.title}
@@ -308,7 +308,7 @@ export default function TasksPage() {
           </select>
 
           <input
-            type="text"
+            type="date"
             name="dueDate"
             value={form.dueDate}
             onChange={handleChange}
