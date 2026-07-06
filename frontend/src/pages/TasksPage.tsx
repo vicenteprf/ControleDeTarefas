@@ -308,7 +308,7 @@ export default function TasksPage() {
           </select>
 
           <input
-            type="date"
+            type="text"
             name="dueDate"
             value={form.dueDate}
             onChange={handleChange}
